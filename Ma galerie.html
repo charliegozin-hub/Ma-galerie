@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ma galerie</title>
+<style>
+  :root {
+    --bg: #0c0c0f;
+    --panel: #17171d;
+    --yellow: #ffd60a;
+    --text: #f4f4f6;
+    --muted: #9a9aa6;
+    --border: #2a2a33;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  button { font: inherit; }
+
+  /* ---------- PAGE DE GARDE ---------- */
+  #cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255, 214, 10, 0.25), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(255, 214, 10, 0.18), transparent 45%),
+      var(--bg);
+  }
+  .cover-title {
+    font-size: clamp(3rem, 10vw, 7rem);
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--yellow);
+    text-shadow: 0 0 25px rgba(255, 214, 10, 0.55), 4px 4px 0 #000;
+    transform: rotate(-3deg);
+    animation: glow 2.5s ease-in-out infinite alternate;
+  }
+  .cover-sub {
+    margin-top: 18px;
+    font-size: 1.1rem;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .enter-btn {
+    margin-top: 48px;
+    padding: 16px 40px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #000;
+    background: var(--yellow);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 0 25px rgba(255, 214, 10, 0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .enter-btn:hover { transform: scale(1.07); }
+  @keyframes glow {
+    from { text-shadow: 0 0 15px rgba(255,214,10,0.35), 4px 4px 0 #000; }
+    to   { text-shadow: 0 0 35px rgba(255,214,10,0.9), 4px 4px 0 #000; }
+  }
+
+  /* ---------- SITE ---------- */
+  #site { display: none; }
+  header.top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 5%;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(12,12,15,0.92);
+    backdrop-filter: blur(8px);
+    z-index: 10;
+  }
+  header.top h1 { font-size: 1.5rem; color: var(--yellow); cursor: pointer; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--yellow);
+    background: transparent;
+    color: var(--yellow);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn:hover { background: var(--yellow); color: #000; }
+  .btn.primary { background: var(--yellow); color: #000; }
+  .btn.primary:hover { filter: brightness(1.1); }
+  .btn.danger { border-color: #ff5a5a; color: #ff5a5a; }
+  .btn.danger:hover { background: #ff5a5a; color: #000; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .notice {
+    margin: 16px 5% 0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* Accueil : cartes */
+  #home { padding: 50px 5%; }
+  #home h2 { text-align: center; font-size: 2rem; margin-bottom: 36px; }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .card {
+    position: relative;
+    height: 280px;
+    border-radius: 18px;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--panel);
+    border: 2px solid var(--border);
+    transition: transform 0.25s, border-color 0.25s;
+  }
+  .card:hover { transform: translateY(-6px); border-color: var(--yellow); }
+  .card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+  .card:hover img { transform: scale(1.08); }
+  .card .empty {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 1rem;
+  }
+  .card .label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 50px 18px 16px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.9));
+  }
+  .card .label h3 { font-size: 1.3rem; color: var(--yellow); }
+  .card .label span { font-size: 0.9rem; color: var(--muted); }
+
+  /* Galerie d'une catégorie */
+  #category { display: none; padding: 40px 5%; }
+  #category h2 { font-size: 2rem; color: var(--yellow); margin-bottom: 8px; }
+  .back { display: inline-block; margin-bottom: 26px; color: var(--muted); cursor: pointer; }
+  .back:hover { color: var(--text); }
+  .gallery { columns: 3 260px; column-gap: 18px; }
+  .gallery .item {
+    break-inside: avoid;
+    margin-bottom: 18px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    cursor: zoom-in;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .gallery .item:hover { border-color: var(--yellow); transform: scale(1.02); }
+  .gallery img { width: 100%; display: block; }
+  .gallery .no-photos { color: var(--muted); padding: 40px 0; }
+
+  /* Lightbox */
+  #lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    z-index: 100;
+    padding: 20px;
+  }
+  #lightbox.open { display: flex; }
+  #lightbox img {
+    max-width: 92vw;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 0 40px rgba(255,214,10,0.3);
+  }
+  #lightbox .lb-title { color: var(--muted); }
+  #lightbox .lb-bar { display: flex; gap: 12px; }
+
+  /* Modal */
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    padding: 20px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    width: 100%;
+    max-width: 440px;
+  }
+  .modal h3 { color: var(--yellow); margin-bottom: 18px; font-size: 1.3rem; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 0.9rem; }
+  .field input[type="text"], .field select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+  }
+  .field input[type="file"] { color: var(--muted); }
+  .preview {
+    display: none;
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 10px;
+    margin-top: 10px;
+  }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+  .status { color: var(--muted); font-size: 0.9rem; min-height: 1.2em; margin-top: 6px; }
+  .error { color: #ff7a7a; }
+
+  footer {
+    text-align: center;
+    padding: 30px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<!-- PAGE DE GARDE -->
+<section id="cover">
+  <h1 class="cover-title">MA GALERIE</h1>
+  <p class="cover-sub">Coiffure · Montages · Grimaces · Portraits · Mèmes</p>
+  <button class="enter-btn" onclick="enterSite()">Entrer ⚡</button>
+</section>
+
+<!-- SITE -->
+<div id="site">
+  <header class="top">
+    <h1 onclick="showHome()">MA GALERIE</h1>
+    <div class="actions">
+      <button class="btn" onclick="openNewCategory()">+ Nouvelle catégorie</button>
+      <button class="btn primary" onclick="openAddPhoto()">+ Ajouter une photo</button>
+    </div>
+  </header>
+
+  <div id="notice" class="notice" style="display:none"></div>
+
+  <!-- Accueil : catégories -->
+  <section id="home">
+    <h2>Choisis une catégorie</h2>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <!-- Galerie de catégorie -->
+  <section id="category">
+    <span class="back" onclick="showHome()">← Retour aux catégories</span>
+    <h2 id="cat-title"></h2>
+    <div class="gallery" id="cat-gallery"></div>
+  </section>
+
+  <footer>© Ma galerie</footer>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox(event)">
+  <img id="lightbox-img" src="" alt="">
+  <div class="lb-title" id="lb-title"></div>
+  <div class="lb-bar" onclick="event.stopPropagation()">
+    <button class="btn danger" id="lb-delete" onclick="deleteCurrentPhoto()">Supprimer</button>
+    <button class="btn" onclick="closeLightbox()">Fermer</button>
+  </div>
+</div>
+
+<!-- Modal : ajouter une photo -->
+<div class="modal-bg" id="modal-photo">
+  <div class="modal">
+    <h3>Ajouter une photo</h3>
+    <div class="field">
+      <label for="photo-file">Fichier photo</label>
+      <input type="file" id="photo-file" accept="image/*" onchange="onFilePicked(event)">
+      <img id="photo-preview" class="preview" alt="">
+    </div>
+    <div class="field">
+      <label for="photo-title">Titre (optionnel)</label>
+      <input type="text" id="photo-title" placeholder="Ex. Coiffure du mois">
+    </div>
+    <div class="field">
+      <label for="photo-cat">Catégorie</label>
+      <select id="photo-cat"></select>
+    </div>
+    <div class="field" id="new-cat-field" style="display:none">
+      <label for="new-cat-name">Nom de la nouvelle catégorie</label>
+      <input type="text" id="new-cat-name" placeholder="Ex. Voyages">
+    </div>
+    <div class="status" id="photo-status"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-photo')">Annuler</button>
+      <button class="btn primary" id="photo-save" onclick="savePhoto()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : nouvelle catégorie -->
+<div class="modal-bg" id="modal-cat">
+  <div class="modal">
+    <h3>Nouvelle catégorie</h3>
+    <div class="field">
+      <label for="cat-name">Nom</label>
+      <input type="text" id="cat-name" placeholder="Ex. Vacances">
+    </div>
+    <div class="status" id="cat-status"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-cat')">Annuler</button>
+      <button class="btn primary" id="cat-save" onclick="saveCategory()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Données
+// ============================================================
+let db = null;                 // stockage (capability "db")
+let categories = [];           // { id, name, order }
+let photos = [];               // { id, category, title, dataUrl, createdAt }
+let currentCat = null;
+let currentPhotoId = null;
+let storageReady = false;
+const LOCAL_MODE_KEY = "local";
+
+const DEFAULT_CATEGORIES = [
+  { id: "coiffure",  name: "Chez le coiffeur",        order: 1 },
+  { id: "montages",  name: "Montages & effets",       order: 2 },
+  { id: "grimaces",  name: "Grimaces & déguisements", order: 3 },
+  { id: "portraits", name: "Portraits",               order: 4 },
+  { id: "memes",     name: "Mèmes",                   order: 5 },
+];
+
+function slugify(text) {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "categorie";
+}
+
+function nextOrder() {
+  return categories.reduce((m, c) => Math.max(m, c.order || 0), 0) + 1;
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+// ============================================================
+// Connexion au stockage
+// ============================================================
+async function initStorage() {
+  try {
+    db = window.claude ? await window.claude.use("db") : null;
+  } catch (e) {
+    db = null;
+  }
+
+  if (!db) {
+    // Mode local : fonctionne, mais rien n'est sauvegardé entre deux visites
+    categories = DEFAULT_CATEGORIES.slice();
+    photos = [];
+    showNotice("Stockage indisponible dans cette vue : les ajouts ne seront pas conservés.");
+    render();
+    return;
+  }
+
+  // Abonnements temps réel
+  db.collection("categories").orderBy("order").onSnapshot(
+    snap => {
+      categories = snap.docs.filter(d => d.exists).map(d => ({ id: d.id, ...d.data() }));
+      if (snap.empty) seedDefaults();
+      render();
+    },
+    err => showNotice("Erreur de chargement des catégories : " + err.message)
+  );
+
+  db.collection("photos").orderBy("createdAt", "desc").onSnapshot(
+    snap => {
+      photos = snap.docs.filter(d => d.exists).map(d => ({ id: d.id, ...d.data() }));
+      render();
+    },
+    err => showNotice("Erreur de chargement des photos : " + err.message)
+  );
+  storageReady = true;
+}
+
+async function seedDefaults() {
+  // Crée les catégories de départ si la base est vide (une seule fois)
+  try {
+    for (const c of DEFAULT_CATEGORIES) {
+      await db.collection("categories").doc(c.id).set({ name: c.name, order: c.order });
+    }
+  } catch (e) { /* déjà créées par une autre vue */ }
+}
+
+function showNotice(msg) {
+  const el = document.getElementById("notice");
+  el.textContent = msg;
+  el.style.display = msg ? "block" : "none";
+}
+
+// ============================================================
+// Affichage
+// ============================================================
+function enterSite() {
+  document.getElementById("cover").style.display = "none";
+  document.getElementById("site").style.display = "block";
+  showHome();
+}
+
+function showHome() {
+  document.getElementById("home").style.display = "block";
+  document.getElementById("category").style.display = "none";
+  currentCat = null;
+  render();
+  window.scrollTo(0, 0);
+}
+
+function render() {
+  renderCards();
+  renderCategoryOptions();
+  if (currentCat) renderCategory(currentCat);
+}
+
+function photosOf(catId) {
+  return photos.filter(p => p.category === catId);
+}
+
+function renderCards() {
+  const wrap = document.getElementById("cards");
+  wrap.innerHTML = "";
+  if (categories.length === 0) {
+    wrap.innerHTML = '<p class="empty" style="text-align:center;color:var(--muted)">Aucune catégorie pour l\'instant. Crée-en une !</p>';
+    return;
+  }
+  categories.forEach(c => {
+    const list = photosOf(c.id);
+    const card = document.createElement("div");
+    card.className = "card";
+    card.onclick = () => showCategory(c.id);
+
+    const media = list.length
+      ? `<img src="${list[0].dataUrl}" alt="${escapeHtml(c.name)}">`
+      : `<div class="empty">Aucune photo</div>`;
+
+    card.innerHTML = `
+      ${media}
+      <div class="label">
+        <h3>${escapeHtml(c.name)}</h3>
+        <span>${list.length} photo${list.length > 1 ? "s" : ""}</span>
+      </div>`;
+    wrap.appendChild(card);
+  });
+}
+
+function renderCategoryOptions() {
+  const sel = document.getElementById("photo-cat");
+  const previous = sel.value;
+  sel.innerHTML = "";
+  categories.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = c.name;
+    sel.appendChild(opt);
+  });
+  const newOpt = document.createElement("option");
+  newOpt.value = "__new__";
+  newOpt.textContent = "+ Nouvelle catégorie…";
+  sel.appendChild(newOpt);
+  if (previous && [...sel.options].some(o => o.value === previous)) sel.value = previous;
+  else if (currentCat) sel.value = currentCat;
+  toggleNewCatField();
+}
+
+function showCategory(catId) {
+  currentCat = catId;
+  document.getElementById("home").style.display = "none";
+  document.getElementById("category").style.display = "block";
+  renderCategory(catId);
+  window.scrollTo(0, 0);
+}
+
+function renderCategory(catId) {
+  const cat = categories.find(c => c.id === catId);
+  if (!cat) { showHome(); return; }
+  document.getElementById("cat-title").textContent = cat.name;
+
+  const gallery = document.getElementById("cat-gallery");
+  gallery.innerHTML = "";
+  const list = photosOf(catId);
+  if (list.length === 0) {
+    gallery.innerHTML = '<p class="no-photos">Aucune photo dans cette catégorie pour l\'instant.</p>';
+    return;
+  }
+  list.forEach(p => {
+    const item = document.createElement("div");
+    item.className = "item";
+    item.innerHTML = `<img src="${p.dataUrl}" alt="${escapeHtml(p.title || cat.name)}" loading="lazy">`;
+    item.onclick = () => openLightbox(p.id);
+    gallery.appendChild(item);
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// ============================================================
+// Lightbox
+// ============================================================
+function openLightbox(photoId) {
+  const p = photos.find(x => x.id === photoId);
+  if (!p) return;
+  currentPhotoId = photoId;
+  document.getElementById("lightbox-img").src = p.dataUrl;
+  document.getElementById("lb-title").textContent = p.title || "";
+  document.getElementById("lb-delete").disabled = !db;
+  document.getElementById("lightbox").classList.add("open");
+}
+
+function closeLightbox(e) {
+  if (e && e.target.tagName === "IMG") return;
+  document.getElementById("lightbox").classList.remove("open");
+  currentPhotoId = null;
+}
+
+async function deleteCurrentPhoto() {
+  if (!currentPhotoId || !db) return;
+  if (!confirm("Supprimer cette photo ?")) return;
+  try {
+    await db.collection("photos").doc(currentPhotoId).delete();
+    closeLightbox();
+  } catch (e) {
+    alert("Suppression impossible : " + e.message);
+  }
+}
+
+// ============================================================
+// Modals
+// ============================================================
+function openModal(id) { document.getElementById(id).classList.add("open"); }
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+function openAddPhoto() {
+  document.getElementById("photo-file").value = "";
+  document.getElementById("photo-title").value = "";
+  document.getElementById("new-cat-name").value = "";
+  document.getElementById("photo-preview").style.display = "none";
+  document.getElementById("photo-status").textContent = "";
+  document.getElementById("photo-status").className = "status";
+  renderCategoryOptions();
+  openModal("modal-photo");
+}
+
+function toggleNewCatField() {
+  const isNew = document.getElementById("photo-cat").value === "__new__";
+  document.getElementById("new-cat-field").style.display = isNew ? "block" : "none";
+}
+document.getElementById("photo-cat").addEventListener("change", toggleNewCatField);
+
+function onFilePicked(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById("photo-preview");
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = "block";
+}
+
+function openNewCategory() {
+  document.getElementById("cat-name").value = "";
+  document.getElementById("cat-status").textContent = "";
+  openModal("modal-cat");
+}
+
+function setStatus(id, msg, isError) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = "status" + (isError ? " error" : "");
+}
+
+// Crée une catégorie et renvoie son id
+async function createCategory(name) {
+  const clean = name.trim();
+  if (!clean) throw new Error("Le nom ne peut pas être vide.");
+  const exists = categories.find(c => c.name.toLowerCase() === clean.toLowerCase());
+  if (exists) return exists.id;
+
+  const id = slugify(clean) + "-" + uid().slice(-4);
+  const order = nextOrder();
+  if (db) {
+    await db.collection("categories").doc(id).set({ name: clean, order });
+  } else {
+    categories.push({ id, name: clean, order });
+  }
+  return id;
+}
+
+async function saveCategory() {
+  const name = document.getElementById("cat-name").value;
+  const btn = document.getElementById("cat-save");
+  btn.disabled = true;
+  try {
+    const id = await createCategory(name);
+    closeModal("modal-cat");
+    render();
+    showCategory(id);
+  } catch (e) {
+    setStatus("cat-status", e.message || "Erreur lors de la création.", true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ============================================================
+// Compression d'image pour tenir dans la base
+// ============================================================
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Lecture du fichier impossible."));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Ce fichier n'est pas une image valide."));
+      img.onload = () => {
+        const maxSide = 1000;
+        let { width, height } = img;
+        const ratio = Math.min(1, maxSide / Math.max(width, height));
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+
+        // Baisse la qualité jusqu'à ce que la photo tienne dans une seule entrée
+        let quality = 0.85;
+        let url = canvas.toDataURL("image/jpeg", quality);
+        while (url.length > 200000 && quality > 0.4) {
+          quality -= 0.08;
+          url = canvas.toDataURL("image/jpeg", quality);
+        }
+        if (url.length > 200000) {
+          return reject(new Error("Photo trop grande même après compression. Essaie une image plus petite."));
+        }
+        resolve(url);
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ============================================================
+// Enregistrement d'une photo
+// ============================================================
+async function savePhoto() {
+  const file = document.getElementById("photo-file").files[0];
+  const title = document.getElementById("photo-title").value.trim();
+  let catValue = document.getElementById("photo-cat").value;
+  const btn = document.getElementById("photo-save");
+
+  if (!file) return setStatus("photo-status", "Choisis un fichier photo.", true);
+
+  btn.disabled = true;
+  try {
+    setStatus("photo-status", "Préparation de la photo…");
+    const dataUrl = await compressImage(file);
+
+    if (catValue === "__new__") {
+      setStatus("photo-status", "Création de la catégorie…");
+      catValue = await createCategory(document.getElementById("new-cat-name").value);
+    }
+
+    setStatus("photo-status", "Enregistrement…");
+    const record = {
+      category: catValue,
+      title: title,
+      dataUrl: dataUrl,
+      createdAt: Date.now(),
+    };
+    if (db) {
+      await db.collection("photos").add(record);
+    } else {
+      photos.unshift({ id: uid(), ...record });
+    }
+
+    closeModal("modal-photo");
+    render();
+    showCategory(catValue);
+  } catch (e) {
+    setStatus("photo-status", e.message || "Erreur lors de l'enregistrement.", true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ============================================================
+// Démarrage
+// ============================================================
+// Affiche d'abord les catégories de départ, puis branche le stockage
+categories = DEFAULT_CATEGORIES.slice();
+render();
+initStorage();
+</script>
+</body>
+</html>
